@@ -4,6 +4,7 @@ TTGO T-Call V1.4 (AM-036) SIM800L Basic AT Test
 */
 
 #include <HardwareSerial.h>
+#include "gsm.h"
 
 // TTGO T-Call V1.4 pinout
 #define MODEM_RST         5
@@ -13,6 +14,26 @@ TTGO T-Call V1.4 (AM-036) SIM800L Basic AT Test
 #define MODEM_RX          26
 
 HardwareSerial SerialGSM(1);
+
+static bool waitForKeyword(const char *keyword, unsigned long timeoutMs) {
+    unsigned long start = millis();
+    String buffer;
+    while (millis() - start < timeoutMs) {
+        while (SerialGSM.available()) {
+            char c = (char)SerialGSM.read();
+            buffer += c;
+            if (buffer.indexOf(keyword) >= 0) {
+                return true;
+            }
+        }
+        delay(10);
+    }
+    Serial.print("Timeout waiting for: ");
+    Serial.println(keyword);
+    Serial.print("Buffer: ");
+    Serial.println(buffer);
+    return false;
+}
 
 void modemPowerOn() {
     // Power on the SIM800L
@@ -75,5 +96,27 @@ void loopGSM() {
     if (Serial.available()) {
         SerialGSM.write(Serial.read());
     }
+}
+
+bool sendSms(const String &phoneNumber, const String &text) {
+    Serial.println("Preparing to send SMS...");
+
+    SerialGSM.println("AT");
+    if (!waitForKeyword("OK", 2000)) return false;
+
+    SerialGSM.println("AT+CMGF=1");
+    if (!waitForKeyword("OK", 2000)) return false;
+
+    SerialGSM.print("AT+CMGS=\"");
+    SerialGSM.print(phoneNumber);
+    SerialGSM.println("\"");
+    if (!waitForKeyword(">", 5000)) return false;
+
+    SerialGSM.print(text);
+    SerialGSM.write(26); // CTRL+Z
+
+    bool sent = waitForKeyword("OK", 60000) || waitForKeyword("+CMGS:", 60000);
+    Serial.println(sent ? "SMS sent successfully" : "Failed to send SMS");
+    return sent;
 }
 

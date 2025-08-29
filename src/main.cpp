@@ -1,6 +1,8 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
 #include <MQTTPubSubClient.h>
+#include <ArduinoJson.h>
+#include "gsm.h"
 
 const char* ssid = "Dure";
 const char* password = "dure786*";
@@ -33,9 +35,28 @@ void setup() {
   }
   Serial.println("Connected to MQTT broker");
 
-  mqtt.subscribe("/hello", [](const String& payload, const size_t size) {
-    Serial.print("/hello ");
+  mqtt.subscribe("sms/outbound", [](const String& payload, const size_t size) {
+    Serial.print("sms/outbound ");
     Serial.println(payload);
+
+    StaticJsonDocument<512> doc;
+    DeserializationError err = deserializeJson(doc, payload);
+    if (err) {
+      Serial.print("JSON parse error: ");
+      Serial.println(err.c_str());
+      return;
+    }
+
+    const char* phone = doc["phoneNumber"] | "";
+    const char* text = doc["text"] | "";
+
+    if (strlen(phone) == 0 || strlen(text) == 0) {
+      Serial.println("Invalid SMS payload");
+      return;
+    }
+
+    bool ok = sendSms(String(phone), String(text));
+    Serial.println(ok ? "SMS sent" : "SMS failed");
   });
 }
 
