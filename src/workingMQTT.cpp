@@ -29,7 +29,7 @@
 // }
 
 
-// void setupMQTT() {
+// void setup() {
 //   Serial.begin(9600);
 //   // WiFi.mode(WIFI_STA);
 //   // WiFi.begin(ssid, password);
@@ -105,12 +105,14 @@
 //   Serial.println("-----------------------");
 // }
 
-// void loopMQTT() {
-
+// void loop() {
+//   Serial.println("loop");
 //   //wsClient.loop();   // must run WebSocket
 //   //mqtt.update();     // must run MQTT
 //   mqtt.update();
+//   Serial.println("mqtt.update");
 //   wsClient.loop();
+//   Serial.println("wsClient.loop");
 
 //   // static unsigned long lastMsg = 0;
 //   // if (millis() - lastMsg > 5000) {
@@ -133,5 +135,7 @@
 //     lastPublishTime = millis();
 //     Serial.println("Publishing message...");
 //     mqtt.publish("test/topicesp32", "Hello from ESP32");
+//     Serial.println("Published message");
 //   }
+//   delay(1000);
 // }
