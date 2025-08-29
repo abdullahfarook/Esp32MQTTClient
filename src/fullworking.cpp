@@ -133,12 +133,13 @@
 //   // }
 
 //   if (!mqtt.isConnected()) {
-//     Serial.println("MQTT not connected, reconnecting...");
-//     connectToMQTT();
+//     Serial.println("MQTT not connected, restarting...");
+//     ESP.restart();    // immediate software reset
 //   }
 
 //   if(!wsClient.isConnected()){
-//     Serial.println("WS not connected, reconnecting...");
+//     Serial.println("WS not connected, restarting...");
+//     ESP.restart();    // immediate software reset
 //   }
 
 //   // static uint32_t lastPublishTime = millis();
