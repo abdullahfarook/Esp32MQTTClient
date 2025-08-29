@@ -12,6 +12,21 @@ const char* mqtt_path = "/mqtt";
 
 WebSocketsClient wsClient;
 MQTTPubSubClient mqtt;  // constructor overload exists
+
+struct SpiRamAllocator : ArduinoJson::Allocator {
+  void* allocate(size_t size) override {
+    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+  }
+
+  void deallocate(void* pointer) override {
+    heap_caps_free(pointer);
+  }
+
+  void* reallocate(void* ptr, size_t new_size) override {
+    return heap_caps_realloc(ptr, new_size, MALLOC_CAP_SPIRAM);
+  }
+};
+
 void setup() {
   Serial.begin(9600);
   WiFi.begin(ssid, password);
@@ -39,7 +54,9 @@ void setup() {
     Serial.print("sms/outbound ");
     Serial.println(payload);
 
-    StaticJsonDocument<512> doc;
+    SpiRamAllocator allocator;
+    JsonDocument doc(&allocator);
+
     DeserializationError err = deserializeJson(doc, payload);
     if (err) {
       Serial.print("JSON parse error: ");
