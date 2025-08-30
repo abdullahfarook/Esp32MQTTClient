@@ -99,24 +99,30 @@ void loopGSM() {
 }
 
 bool sendSms(const String &phoneNumber, const String &text) {
+    bool sent = true;
+
     Serial.println("Preparing to send SMS...");
 
     SerialGSM.println("AT");
-    if (!waitForKeyword("OK", 2000)) return false;
+    if (!waitForKeyword("OK", 2000)){
+        sent = false;
+    }
 
-    SerialGSM.println("AT+CMGF=1");
-    if (!waitForKeyword("OK", 2000)) return false;
+    // SerialGSM.println("AT+CMGF=1");
+    // if (!waitForKeyword("OK", 2000)){
+    //     sent = false;
+    // }
 
-    SerialGSM.print("AT+CMGS=\"");
-    SerialGSM.print(phoneNumber);
-    SerialGSM.println("\"");
-    if (!waitForKeyword(">", 5000)) return false;
+    // SerialGSM.print("AT+CMGS=\"");
+    // SerialGSM.print(phoneNumber);
+    // SerialGSM.println("\"");
+    // if (!waitForKeyword(">", 5000)) return false;
 
-    SerialGSM.print(text);
-    SerialGSM.write(26); // CTRL+Z
+    // SerialGSM.print(text);
+    // SerialGSM.write(26); // CTRL+Z
 
-    bool sent = waitForKeyword("OK", 60000) || waitForKeyword("+CMGS:", 60000);
-    Serial.println(sent ? "SMS sent successfully" : "Failed to send SMS");
-    return sent;
+    // bool sent = waitForKeyword("OK", 60000) || waitForKeyword("+CMGS:", 60000);
+    // Serial.println(sent ? "SMS sent successfully" : "Failed to send SMS");
+    return sent; 
 }
 
